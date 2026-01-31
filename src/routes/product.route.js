@@ -5,7 +5,8 @@ import {
   getAllProducts,
   getProductBySlug,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  getProductById
 } from "../controllers/product.controller.js";
 
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -16,12 +17,11 @@ import {
 } from "../validations/product.validation.js";
 
 const router = Router();
-
-// Public routes
+router.use(verifyJWT);
 router.get("/", getAllProducts);
+router.get("/:id", getProductById);
 router.get("/:slug", getProductBySlug);
 
-// Protected routes
 router.post(
   "/",
   verifyJWT,
@@ -41,3 +41,4 @@ router.patch(
 router.delete("/:id", verifyJWT, deleteProduct);
 
 export default router;
+

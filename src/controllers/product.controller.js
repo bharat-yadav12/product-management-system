@@ -4,9 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { Product } from "../models/product.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
-/**
- * CREATE PRODUCT (with image upload)
- */
+
 export const createProduct = asyncHandler(async (req, res) => {
   const {
     metaTitle,
@@ -17,12 +15,10 @@ export const createProduct = asyncHandler(async (req, res) => {
     description
   } = req.body;
 
-  // multer puts files on req.files
   if (!req.files || req.files.length === 0) {
     throw new ApiError(400, "At least one product image is required");
   }
 
-  // upload images to cloudinary
   const galleryImages = [];
 
   for (const file of req.files) {
@@ -52,9 +48,6 @@ export const createProduct = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, product, "Product created successfully"));
 });
 
-/**
- * GET ALL PRODUCTS
- */
 export const getAllProducts = asyncHandler(async (req, res) => {
   const products = await Product.find()
     .populate("createdBy", "username email")
@@ -65,9 +58,6 @@ export const getAllProducts = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, products, "Products fetched successfully"));
 });
 
-/**
- * GET PRODUCT BY SLUG
- */
 export const getProductBySlug = asyncHandler(async (req, res) => {
   const { slug } = req.params;
 
@@ -83,10 +73,7 @@ export const getProductBySlug = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, product, "Product fetched successfully"));
 });
 
-/**
- * UPDATE PRODUCT
- * (supports updating images OR only text fields)
- */
+
 export const updateProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
@@ -98,7 +85,6 @@ export const updateProduct = asyncHandler(async (req, res) => {
 
   let updatedImages = product.galleryImages;
 
-  // If new images are uploaded, replace old ones
   if (req.files && req.files.length > 0) {
     updatedImages = [];
 
@@ -129,9 +115,6 @@ export const updateProduct = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, updatedProduct, "Product updated successfully"));
 });
 
-/**
- * DELETE PRODUCT
- */
 export const deleteProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
@@ -141,11 +124,25 @@ export const deleteProduct = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Product not found");
   }
 
-  // NOTE:
-  // We are not deleting images from Cloudinary here.
-  // In real apps, you'd store public_id and delete them.
-
   return res
     .status(200)
     .json(new ApiResponse(200, {}, "Product deleted successfully"));
 });
+
+
+export const getProductById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const product = await Product.findById(id)
+    .populate("createdBy", "username email");
+
+  if (!product) {
+    throw new ApiError(404, "Product not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, product, "Product fetched successfully"));
+});
+
+
